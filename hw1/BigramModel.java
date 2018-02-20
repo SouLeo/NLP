@@ -44,7 +44,6 @@ public class BigramModel {
 	    // Accumulate unigram and bigram counts in maps
 	    trainSentences(sentences);
 	    // Compute final unigram and bigram probs from counts
-        // calculateProbsBackwards();
         calculateProbs();
     }
 
@@ -330,8 +329,8 @@ public class BigramModel {
      *  Uses the last fraction of the data for testing and the first part
      *  for training.
      */
-
-    public static void main(String[] args) throws IOException {
+ /*
+   public static void main(String[] args) throws IOException {
 	// All but last arg is a file/directory of LDC tagged input data
 	File[] files = new File[args.length - 1];
 	for (int i = 0; i < files.length; i++) 
@@ -363,5 +362,5 @@ public class BigramModel {
 	model.test(testSentences);
 	model.test2(testSentences);
     }
-
+*/
 }

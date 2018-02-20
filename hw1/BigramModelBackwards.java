@@ -7,14 +7,15 @@ public class BigramModelBackwards extends BigramModel{
     @Override
     /** Backwards model for accumulating unigram and bigram counts for this sentence */
     public void trainSentence(List<String> sentence) {
-        Collections.reverse(sentence);
+        List<String> reversedSentence = new ArrayList<String>(sentence);
+        Collections.reverse(reversedSentence);
         // First count an initial start sentence token
         String prevToken = "</S>";
         DoubleValue unigramValue = unigramMap.get("</S>");
         unigramValue.increment();
         tokenCount++;
         // For each token in sentence, accumulate a unigram and bigram count
-        for (String token : sentence) {
+        for (String token : reversedSentence) {
             unigramValue = unigramMap.get(token);
             // If this is the first time token is seen then count it
             // as an unkown token (<UNK>) to handle out-of-vocabulary
@@ -57,14 +58,15 @@ public class BigramModelBackwards extends BigramModel{
 
     @Override
     public double sentenceLogProb(List<String> sentence){
-        Collections.reverse(sentence);
+        List<String> reversedSentence = new ArrayList<String>(sentence);
+        Collections.reverse(reversedSentence);
         // Set start-sentence as initial token
         String prevToken = "</S>";
         // Maintain total sentence prob as sum of individual token
         // log probs (since adding logs is same as multiplying probs)
         double sentenceLogProb = 0;
         // Check prediction of each token in sentence
-        for (String token : sentence) {
+        for (String token : reversedSentence) {
             // Retrieve unigram prob
             DoubleValue unigramVal = unigramMap.get(token);
             if (unigramVal == null) {
@@ -94,11 +96,45 @@ public class BigramModelBackwards extends BigramModel{
     }
 
     @Override
+    public double[] sentenceTokenProbs(List<String> sentence){
+        List<String> reversedSentence = new ArrayList<String>(sentence);
+        Collections.reverse(reversedSentence);
+        // Set start-sentence as initial token
+        String prevToken = "</S>";
+        // Vector for storing token prediction probs
+        double[] tokenProbs = new double[sentence.size() + 1];
+        // Token counter
+        int i = 0;
+        // Compute prob of predicting each token in sentence
+        for (String token : reversedSentence) {
+            DoubleValue unigramVal = unigramMap.get(token);
+            if (unigramVal == null) {
+                token = "<UNK>";
+                unigramVal = unigramMap.get(token);
+            }
+            String bigram = bigram(prevToken, token);
+            DoubleValue bigramVal = bigramMap.get(bigram);
+            // Store prediction prob for i'th token
+            tokenProbs[i] = interpolatedProb(unigramVal, bigramVal);
+            prevToken = token;
+            i++;
+        }
+        // Check prediction of end of sentence
+        DoubleValue unigramVal = unigramMap.get("<S>");
+        String bigram = bigram(prevToken, "<S>");
+        DoubleValue bigramVal = bigramMap.get(bigram);
+        // Store end of sentence prediction prob
+        tokenProbs[i] = interpolatedProb(unigramVal, bigramVal);
+        return tokenProbs;
+    }
+
+    @Override
     public double sentenceLogProb2(List<String> sentence){
-        Collections.reverse(sentence);
+        List<String> reversedSentence = new ArrayList<String>(sentence);
+        Collections.reverse(reversedSentence);
         String prevToken = "</S>";
         double sentenceLogProb = 0;
-        for (String token : sentence) {
+        for (String token : reversedSentence) {
             DoubleValue unigramVal = unigramMap.get(token);
             if (unigramVal == null) {
                 token = "<UNK>";
@@ -112,7 +148,6 @@ public class BigramModelBackwards extends BigramModel{
         }
         return sentenceLogProb;
     }
-/*
     public static void main(String[] args) throws IOException {
         // All but last arg is a file/directory of LDC tagged input data
         File[] files = new File[args.length - 1];
@@ -134,7 +169,7 @@ public class BigramModelBackwards extends BigramModel{
                 ") \n# Test Sentences = " + testSentences.size() +
                 " (# words = " + wordCount(testSentences) + ")");
         // Create a bigram model and train it.
-        BigramModel model = new BigramModel();
+        BigramModelBackwards model = new BigramModelBackwards();
         System.out.println("Training...");
         model.train(trainSentences);
         // Test on training data using test and test2
@@ -145,7 +180,6 @@ public class BigramModelBackwards extends BigramModel{
         model.test(testSentences);
         model.test2(testSentences);
     }
-*/
 }
 
 
