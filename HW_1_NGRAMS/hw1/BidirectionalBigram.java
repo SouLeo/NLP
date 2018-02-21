@@ -1,5 +1,3 @@
-package hw1;
-
 import java.io.*;
 import java.util.*;
 

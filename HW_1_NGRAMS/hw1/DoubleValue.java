@@ -1,5 +1,3 @@
-package hw1;
-
 /**
  * A simple wrapper data structure for storing a double 
  * as an Object that can be put into lists, maps, etc. and then
